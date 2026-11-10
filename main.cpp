@@ -187,8 +187,7 @@ public:
             case GameState::Start:
 
                 cout << "===================" << endl;
-                cout << enemy.name
-                    << " ‚ªŒ»‚ê‚½I" << endl;
+                cout << enemy.name<< " ‚ªŒ»‚ê‚½I" << endl;
                 cout << "===================" << endl;
 
                 state = GameState::Battle;
@@ -198,12 +197,9 @@ public:
             {
                 cout << endl;
 
-                cout << "—EŽÒHP : "
-                    << player.hp << endl;
+                cout << "—EŽÒHP : "<< player.hp << endl;
 
-                cout << enemy.name
-                    << " HP : "
-                    << enemy.hp << endl;
+                cout << enemy.name<< " HP : "<< enemy.hp << endl;
 
                 cout << endl;
 
@@ -224,9 +220,7 @@ public:
 
                     enemy.hp -= player.atk;
 
-                    cout
-                        << "—EŽÒ‚ÌUŒ‚I"
-                        << endl;
+                    cout<< "—EŽÒ‚ÌUŒ‚I"<< endl;
 
                     if (enemy.hp <= 0)
                     {
@@ -236,10 +230,7 @@ public:
 
                     player.hp -= enemy.atk;
 
-                    cout
-                        << enemy.name
-                        << " ‚Ì”½Œ‚I"
-                        << endl;
+                    cout<< enemy.name<< " ‚Ì”½Œ‚I"<< endl;
 
                     if (player.hp <= 0)
                     {
@@ -259,10 +250,174 @@ public:
             case GameState::GameOver:
 
                 cout << endl;
-                cout << "ƒQ[ƒ€ƒI[ƒo[..."
-                    << endl;
+                cout << "ƒQ[ƒ€ƒI[ƒo[..."<< endl;
                 return;
             }
+        }
+    }
+};
+
+
+class GameView
+{
+public:
+
+    void ShowEnemyAppear(const Enemy& enemy)
+    {
+        cout << "===================" << endl;
+        cout << enemy.name << " ‚ªŒ»‚ê‚½I" << endl;
+        cout << "===================" << endl;
+    }
+
+    void ShowStatus(
+        const Player& player,
+        const Enemy& enemy)
+    {
+        cout << endl;
+
+        cout << "—EŽÒHP : "
+            << player.hp
+            << endl;
+
+        cout << enemy.name
+            << " HP : "
+            << enemy.hp
+            << endl;
+    }
+
+    void ShowMenu()
+    {
+        cout << endl;
+        cout << "1.UŒ‚" << endl;
+    }
+
+    void ShowPlayerAttack()
+    {
+        cout << "—EŽÒ‚ÌUŒ‚I" << endl;
+    }
+
+    void ShowEnemyAttack(
+        const string& name)
+    {
+        cout << name
+            << " ‚Ì”½Œ‚I"
+            << endl;
+    }
+
+    void ShowVictory()
+    {
+        cout << "Ÿ—˜II" << endl;
+    }
+
+    void ShowGameOver()
+    {
+        cout << "ƒQ[ƒ€ƒI[ƒo[..." << endl;
+    }
+};
+
+class GameController
+{
+private:
+
+    Player player;
+    Enemy enemy;
+
+    GameView view;
+    EffectPool pool;
+
+    GameState state;
+
+public:
+
+    GameController()
+        : player("—EŽÒ", 100, 20),
+        enemy(
+            EnemyFactory::CreateEnemy(
+                rand() % 3 + 1)),
+        pool(3)
+    {
+        state = GameState::Start;
+    }
+
+    void Run()
+    {
+        while (true)
+        {
+            switch (state)
+            {
+            case GameState::Start:
+
+                view.ShowEnemyAppear(enemy);
+
+                state = GameState::Battle;
+
+                break;
+
+            case GameState::Battle:
+
+                Battle();
+
+                break;
+
+            case GameState::Victory:
+
+                view.ShowVictory();
+
+                return;
+
+            case GameState::GameOver:
+
+                view.ShowGameOver();
+
+                return;
+            }
+        }
+    }
+
+private:
+
+    void Battle()
+    {
+        view.ShowStatus(
+            player,
+            enemy);
+
+        view.ShowMenu();
+
+        int cmd;
+        cin >> cmd;
+
+        if (cmd != 1)
+        {
+            return;
+        }
+
+        Effect* effect =
+            pool.GetEffect();
+
+        if (effect)
+        {
+            effect->Play();
+        }
+
+        enemy.hp -= player.atk;
+
+        view.ShowPlayerAttack();
+
+        if (enemy.hp <= 0)
+        {
+            state = GameState::Victory;
+            return;
+        }
+
+        player.hp -= enemy.atk;
+
+        view.ShowEnemyAttack(
+            enemy.name);
+
+        if (player.hp <= 0)
+        {
+            state = GameState::GameOver;
         }
     }
 };
@@ -270,10 +425,13 @@ public:
 /////////////////////////////////////////////////
 // Main
 /////////////////////////////////////////////////
-
 int main()
 {
-    GameManager::Instance().Run();
+    srand((unsigned)time(nullptr));
+
+    GameController game;
+
+    game.Run();
 
     return 0;
 }
